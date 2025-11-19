@@ -149,10 +149,13 @@
 
 @layer utilities {
   .gradient-title {
-    @apply bg-gradient-to-b from-gray-400 via-gray-200 to-gray-600;
+    @apply bg-gradient-to-b from-gray-400 via-gray-300 to-gray-600;
     @apply font-extrabold tracking-tighter text-transparent pb-2 pr-2;
     -webkit-background-clip: text;
     background-clip: text;
+  }
+  .gradient {
+    @apply bg-gradient-to-b from-gray-600 via-gray-300 to-gray-600;
   }
 }
 
