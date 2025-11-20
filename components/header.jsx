@@ -1,5 +1,4 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
@@ -17,30 +16,30 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { checkUser } from "@/lib/checkUser";
 
 const margarine = Margarine({
   subsets: ["latin"],
-  weight: "400", // Margarine usually has only one weight
+  weight: "400",
 });
 
 const turretRoad = Turret_Road({
   subsets: ["latin"],
-  weight: ["700"], // Turret Road supports multiple weights
+  weight: ["700"],
 });
 
-const Header = () => {
+const Header = async () => {
+  await checkUser();
   return (
-    <header className="fixed to-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-backdrop-filter:bg-background/60">
+    <header className="fixed to-0 w-full border-b bg-green-200 backdrop-blur-md z-50 supports-backdrop-filter:bg-background/60">
       <nav className="container mx-auto px-4 h-16 flex items-center  justify-between">
         <Link href={"/"}>
           <h1 className={`${margarine.className} text-3xl py-1 w-auto `}>
             KAREER
             <span
-              className={`${turretRoad.className} bg-gradient-to-r from-cyan-200 via-cyan-500 to-cyan-700 bg-clip-text text-transparent `}
+              className={`${turretRoad.className} bg-linear-to-r from-cyan-200 via-cyan-500 to-cyan-700 bg-clip-text text-transparent `}
             >
               .AI
             </span>
@@ -57,7 +56,7 @@ const Header = () => {
             </Link>
 
             <DropdownMenu>
-              <DropdownMenuTrigger>
+              <DropdownMenuTrigger asChild>
                 <Button>
                   <StarsIcon className="h-4 w-4" />
                   <span className="hidden md:block">Growth Tools</span>
