@@ -1,6 +1,6 @@
 "use client";
 import { onboardingSchema } from "@/app/lib/schema";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { useState } from "react";
@@ -24,10 +24,21 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import useFetch from "@/hooks/use-fetch";
+import { updateUser } from "@/actions/user";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const OnboardingForm = ({ industries }) => {
   const [selectedIndustry, setSelectedIndustery] = useState(null);
   const router = useRouter();
+
+  const {
+    loading: updateLoading,
+    fn: updateUserFn,
+    data: updateResult,
+  } = useFetch(updateUser);
+
   const {
     register,
     handleSubmit,
@@ -39,8 +50,29 @@ const OnboardingForm = ({ industries }) => {
   });
 
   const onSubmit = async (values) => {
-    console.log(values);
+    try {
+      const formattedIndustry = [values.industry, values.subIndustries]
+        .filter(Boolean)
+        .join("-")
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+
+      await updateUserFn({
+        ...values,
+        industry: formattedIndustry,
+      });
+    } catch (error) {
+      console.log("Onboarding error", error);
+    }
   };
+
+  useEffect(() => {
+    if (updateResult && !updateLoading) {
+      toast.success("Profile Updated Successfully");
+      router.push("/dashboard");
+      router.refresh();
+    }
+  }, [updateResult, updateLoading]);
 
   const WatchIndustry = watch("industry");
   return (
@@ -108,9 +140,9 @@ const OnboardingForm = ({ industries }) => {
                     })}
                   </SelectContent>
                 </Select>
-                {errors.industry && (
+                {errors.subIndustry && (
                   <p className="text-sm text-red-500">
-                    {errors.industry?.message}
+                    {errors.subIndustry?.message}
                   </p>
                 )}
               </div>
@@ -129,7 +161,7 @@ const OnboardingForm = ({ industries }) => {
 
               {errors.experience && (
                 <p className="text-sm text-red-500">
-                  {errors.industry?.message}
+                  {errors.experience?.message}
                 </p>
               )}
             </div>
@@ -145,9 +177,7 @@ const OnboardingForm = ({ industries }) => {
               </p>
 
               {errors.skills && (
-                <p className="text-sm text-red-500">
-                  {errors.industry?.message}
-                </p>
+                <p className="text-sm text-red-500">{errors.skills?.message}</p>
               )}
             </div>
             <div className="space-y-2">
@@ -160,13 +190,22 @@ const OnboardingForm = ({ industries }) => {
               />
 
               {errors.bio && (
-                <p className="text-sm text-red-500">
-                  {errors.industry?.message}
-                </p>
+                <p className="text-sm text-red-500">{errors.bio?.message}</p>
               )}
             </div>
-            <Button type="submit" className={"w-full cursor-pointer"}>
-              Complete Profile
+            <Button
+              type="submit"
+              className={"w-full cursor-pointer"}
+              disabled={updateLoading}
+            >
+              {updateLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Complete Profile"
+              )}
             </Button>
           </form>
         </CardContent>

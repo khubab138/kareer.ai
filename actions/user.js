@@ -18,19 +18,39 @@ export async function updateUser(data) {
     const result = await db.$transaction(
       async (tx) => {
         let industryInsight = await tx.industryInsight.findUnique({
-          industry: data.industry,
+          where: {
+            industry: data.industry,
+          },
         });
 
-        if (!industryInsight) {
+        if (industryInsight) {
+          // update existing industryInsight
+          industryInsight = await tx.industryInsight.update({
+            where: { industry: data.industry },
+            data: {
+              // whatever fields you want to update
+              salaryRanges: data.salaryRanges ?? industryInsight.salaryRanges,
+              growthRate: data.growthRate ?? industryInsight.growthRate,
+              demandLevel: data.demandLevel ?? industryInsight.demandLevel,
+              topSkills: data.topSkills ?? industryInsight.topSkills,
+              marketOutlook:
+                data.marketOutlook ?? industryInsight.marketOutlook,
+              keyTrends: data.keyTrends ?? industryInsight.keyTrends,
+              recommendedSkills:
+                data.recommendedSkills ?? industryInsight.recommendedSkills,
+              nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            },
+          });
+        } else {
+          // create new
           industryInsight = await tx.industryInsight.create({
             data: {
               industry: data.industry,
-
               salaryRanges: [],
               growthRate: 0,
-              demandLevel: "Medium",
+              demandLevel: "MEDIUM",
               topSkills: [],
-              marketOutlook: "Neutral",
+              marketOutlook: "NEUTRAL",
               keyTrends: [],
               recommendedSkills: [],
               nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -48,14 +68,14 @@ export async function updateUser(data) {
           },
         });
 
-        return { updateUser, industryInsight };
+        return { updatedUser, industryInsight };
       },
       { timeout: 10000 }
     );
-    return result.user;
+    return result.updatedUser;
   } catch (error) {
     console.error("Error Updating User and Industry", error.message);
-    throw new Error("Failed to Update Profile");
+    throw new Error("Failed to Update Profile" + error);
   }
 }
 
