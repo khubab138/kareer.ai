@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, {
   apiVersion: "v1",
 });
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash", // valid
+  model: "gemini-2.5-flash",
 });
 
 export const generateAiInsight = async (industry) => {
@@ -46,6 +46,9 @@ export async function getIndustryInsights() {
   const user = await db.user.findUnique({
     where: {
       clerkUserId: userId,
+    },
+    include: {
+      industryInsight: true,
     },
   });
 
