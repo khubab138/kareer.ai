@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { generateAiInsight } from "./dashboard";
 
 export async function updateUser(data) {
   const { userId } = await auth();
@@ -23,36 +24,13 @@ export async function updateUser(data) {
           },
         });
 
-        if (industryInsight) {
-          // update existing industryInsight
-          industryInsight = await tx.industryInsight.update({
-            where: { industry: data.industry },
-            data: {
-              // whatever fields you want to update
-              salaryRanges: data.salaryRanges ?? industryInsight.salaryRanges,
-              growthRate: data.growthRate ?? industryInsight.growthRate,
-              demandLevel: data.demandLevel ?? industryInsight.demandLevel,
-              topSkills: data.topSkills ?? industryInsight.topSkills,
-              marketOutlook:
-                data.marketOutlook ?? industryInsight.marketOutlook,
-              keyTrends: data.keyTrends ?? industryInsight.keyTrends,
-              recommendedSkills:
-                data.recommendedSkills ?? industryInsight.recommendedSkills,
-              nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            },
-          });
-        } else {
-          // create new
-          industryInsight = await tx.industryInsight.create({
+        if (!industryInsight) {
+          const insights = await generateAiInsight(data.industry);
+
+          industryInsight = await db.industryInsight.create({
             data: {
               industry: data.industry,
-              salaryRanges: [],
-              growthRate: 0,
-              demandLevel: "MEDIUM",
-              topSkills: [],
-              marketOutlook: "NEUTRAL",
-              keyTrends: [],
-              recommendedSkills: [],
+              ...insights,
               nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             },
           });
