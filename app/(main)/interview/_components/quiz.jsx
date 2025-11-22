@@ -16,6 +16,7 @@ import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { BarLoader } from "react-spinners";
 import { toast } from "sonner";
+import QuizResult from "./quiz-result";
 
 const Quiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
