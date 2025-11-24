@@ -16,13 +16,13 @@ import {
   Monitor,
   Save,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import EntryForm from "./entry-form";
 import { entriesToMarkdown } from "@/lib/helper";
 import { useUser } from "@clerk/nextjs";
 import MDEditor from "@uiw/react-md-editor";
-import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
+// import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
@@ -73,7 +73,7 @@ const ResumeBuilder = ({ initialContent }) => {
     if (contactInfo.mobile) parts.push(`☎ ${contactInfo.mobile}`);
     if (contactInfo.linkedin)
       parts.push(`💼 [LinkedIn](${contactInfo.linkedin})`);
-    if (contactInfo.twitter) parts.push(`🐦 [Twitter](${contactInfo.twitter})`);
+    if (contactInfo.twitter) parts.push(`[Twitter](${contactInfo.twitter})`);
 
     return parts.length > 0
       ? `## <div align="center">${
@@ -120,26 +120,37 @@ const ResumeBuilder = ({ initialContent }) => {
     }
   };
 
+  const resumeRef = useRef();
+
+  const sanitizeColors = (el) => {
+    if (!el) return;
+    el.querySelectorAll("*").forEach((child) => {
+      const style = getComputedStyle(child);
+      if (style.color.includes("lab")) child.style.color = "#000";
+      if (style.backgroundColor.includes("lab"))
+        child.style.backgroundColor = "#fff";
+    });
+  };
+
   const generatePDF = async () => {
-    setIsGenerating(true);
-    try {
-      const element = document.getElementById("resume-pdf");
-      if (!element) throw new Error("Resume element not found");
-
-      const canvas = await html2canvas(element, { scale: 2 });
+    const input = resumeRef.current;
+    sanitizeColors(input);
+    html2canvas(input, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#fff",
+    }).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
-
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("resume.pdf");
-    } catch (error) {
-      console.error("PDF generation error", error);
-    } finally {
-      setIsGenerating(false);
-    }
+      pdf.setFontSize(10);
+      pdf.setTextColor(150);
+      const cleanName = form.name.trim().replace(/\s+/g, "_") || "resume";
+      const fileName = `${cleanName}_.pdf`;
+      pdf.save(fileName);
+    });
   };
 
   return (
@@ -329,7 +340,7 @@ const ResumeBuilder = ({ initialContent }) => {
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Project</h3>
               <Controller
-                name="project"
+                name="projects"
                 control={control}
                 render={({ field }) => (
                   <EntryForm
@@ -386,7 +397,7 @@ const ResumeBuilder = ({ initialContent }) => {
             />
           </div>
           <div className="hidden">
-            <div id="resume-pdf">
+            <div id="resume-pdf" ref={resumeRef}>
               <MDEditor.Markdown
                 source={previewContent}
                 style={{

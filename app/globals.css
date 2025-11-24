@@ -172,3 +172,7 @@
 .hero-image.scrolled {
   transform: rotateX(0deg) scale(1) translateY(40px);
 }
+#resume-pdf * {
+  color: #000 !important;
+  background-color: #fff !important;
+}
