@@ -20,7 +20,6 @@ import {
 
 const PerformanceChart = ({ assessments }) => {
   const [cartData, setChartData] = useState([]);
-  console.log(cartData);
 
   useEffect(() => {
     if (assessments) {

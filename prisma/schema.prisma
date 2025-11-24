@@ -14,66 +14,57 @@ model User {
   name            String?
   imageUrl        String?
   industry        String?
-  industryInsight IndustryInsight? @relation(fields: [industry], references: [industry])
   bio             String?
   experience      Int?
   skills          String[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   assessments     Assessments[]
-  resume          Resume?
   coverLetters    CoverLetter[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  resume          Resume?
+  industryInsight IndustryInsight? @relation(fields: [industry], references: [industry])
 }
 
 model Assessments {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
+  id              String   @id @default(cuid())
+  userId          String
   quizScore       Float
   questions       Json[]
   category        String
   improvementTips String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
 
 model Resume {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-
-  content String @db.Text
-
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model CoverLetter {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id]) // Many cover letters per user
-
+  id             String   @id @default(cuid())
+  userId         String
   content        String
   jobDescription String?
   companyName    String
   jobTitle       String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
 
 model IndustryInsight {
-  id       String @id @default(cuid())
-  industry String @unique
-  user     User[]
-
+  id                String   @id @default(cuid())
+  industry          String   @unique
   salaryRanges      Json[]
   growthRate        Float
   demandLevel       String
@@ -81,9 +72,9 @@ model IndustryInsight {
   marketOutlook     String
   keyTrends         String[]
   recommendedSkills String[]
-
-  lastUpdated DateTime @default(now())
-  nextUpdate  DateTime
+  lastUpdated       DateTime @default(now())
+  nextUpdate        DateTime
+  user              User[]
 
   @@index([industry])
 }
