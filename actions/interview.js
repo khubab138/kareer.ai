@@ -30,7 +30,10 @@ export async function generateQuiz() {
       user.skills?.length ? ` with expertise in ${user.skills.join(", ")}` : ""
     }.
     
-    Each question should be multiple choice with 4 options.
+    Each question must:
+     - Be multiple choice with 4 options.
+     - Contain NO code snippets, NO pseudo-code, NO backticks, and NO programming examples.
+     - Use plain text only..
     
     Return the response in this JSON format only, no additional text:
     {

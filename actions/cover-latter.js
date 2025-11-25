@@ -68,7 +68,6 @@ export async function generateCoverLetter(data) {
 
     return coverLetter;
   } catch (error) {
-    console.log(error);
     console.error("Error generating cover-latter", error);
     throw new Error("Failed to generate Cover-letter");
   }

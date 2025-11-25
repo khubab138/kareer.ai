@@ -22,9 +22,7 @@ import EntryForm from "./entry-form";
 import { entriesToMarkdown } from "@/lib/helper";
 import { useUser } from "@clerk/nextjs";
 import MDEditor from "@uiw/react-md-editor";
-// import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
 import { toast } from "sonner";
 
 const ResumeBuilder = ({ initialContent }) => {
@@ -120,37 +118,65 @@ const ResumeBuilder = ({ initialContent }) => {
     }
   };
 
-  const resumeRef = useRef();
+  // const resumeRef = useRef();
 
-  const sanitizeColors = (el) => {
-    if (!el) return;
-    el.querySelectorAll("*").forEach((child) => {
-      const style = getComputedStyle(child);
-      if (style.color.includes("lab")) child.style.color = "#000";
-      if (style.backgroundColor.includes("lab"))
-        child.style.backgroundColor = "#fff";
-    });
-  };
+  // const sanitizeColors = (el) => {
+  //   if (!el) return;
+  //   el.querySelectorAll("*").forEach((child) => {
+  //     const style = getComputedStyle(child);
+  //     if (style.color.includes("lab")) child.style.color = "#000";
+  //     if (style.backgroundColor.includes("lab"))
+  //       child.style.backgroundColor = "#fff";
+  //   });
+  // };
 
   const generatePDF = async () => {
-    const input = resumeRef.current;
-    sanitizeColors(input);
-    html2canvas(input, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#fff",
-    }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.setFontSize(10);
-      pdf.setTextColor(150);
-      const cleanName = form.name.trim().replace(/\s+/g, "_") || "resume";
-      const fileName = `${cleanName}_.pdf`;
-      pdf.save(fileName);
-    });
+    setIsGenerating(true);
+    try {
+      const sourceEl = document.getElementById("resume-pdf");
+
+      const opt = {
+        margin: [15, 15],
+        filename: "resume.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          onclone: (doc) => {
+            const cloned = doc.getElementById("resume-pdf");
+
+            // 🚨 Remove ALL external/global CSS influence
+            const styleSheets = doc.styleSheets;
+            for (let i = styleSheets.length - 1; i >= 0; i--) {
+              try {
+                styleSheets[i].disabled = true;
+              } catch {}
+            }
+
+            // 🚨 Remove inline styles + classes completely
+            cloned.querySelectorAll("*").forEach((node) => {
+              node.removeAttribute("style");
+              node.removeAttribute("class");
+
+              // ensure text layout
+              node.style.color = "black";
+              node.style.background = "white";
+              node.style.border = "none";
+            });
+
+            // root element styles
+            cloned.style.color = "black";
+            cloned.style.background = "white";
+          },
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+
+      await html2pdf().set(opt).from(sourceEl).save();
+    } catch (error) {
+      console.error("PDF generation error:", error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -397,7 +423,7 @@ const ResumeBuilder = ({ initialContent }) => {
             />
           </div>
           <div className="hidden">
-            <div id="resume-pdf" ref={resumeRef}>
+            <div id="resume-pdf">
               <MDEditor.Markdown
                 source={previewContent}
                 style={{

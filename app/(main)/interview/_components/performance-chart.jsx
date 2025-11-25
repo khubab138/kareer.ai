@@ -20,6 +20,7 @@ import {
 
 const PerformanceChart = ({ assessments }) => {
   const [cartData, setChartData] = useState([]);
+  console.log(cartData);
 
   useEffect(() => {
     if (assessments) {
@@ -66,7 +67,7 @@ const PerformanceChart = ({ assessments }) => {
                 type="monotone"
                 dataKey="score"
                 stroke="#9098A4"
-                strokeWidth={2}
+                strokeWidth={3}
               />
             </LineChart>
           </ResponsiveContainer>

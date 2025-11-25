@@ -57,7 +57,7 @@ export async function updateUser(data) {
   }
 }
 
-export async function getUserOnboardingStatus(data) {
+export async function getUserOnboardingStatus() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
   const user = await db.user.findUnique({
@@ -66,7 +66,7 @@ export async function getUserOnboardingStatus(data) {
     },
   });
 
-  if (!user) throw new Error("User Not Found");
+  if (!user) await getUserOnboardingStatus();
 
   try {
     const user = await db.user.findUnique({

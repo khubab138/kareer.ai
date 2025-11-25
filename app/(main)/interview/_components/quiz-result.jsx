@@ -42,7 +42,6 @@ const QuizResult = ({ result, hideStartNew = false, onStartNew }) => {
 
                 <div className="text-sm text-muted-foreground">
                   <p>Your Answer: {q.userAnswer}</p>
-                  {!q.isCorrect && <p>Correct Answer:{q.answer}</p>}
                 </div>
                 <div className="text-sm bg-muted p-2 rounded">
                   <p className="font-medium">Explanation:</p>
